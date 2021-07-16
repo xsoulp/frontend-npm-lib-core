@@ -28,13 +28,14 @@ jobs:
 
     steps:
 
-    - name: Setup
-      run: chown -R $USER:$USER ${{ github.workspace }}
+
 
     - name: Checkout    
       uses: actions/checkout@v2
       with:
         token: ${{ secrets.NPM_TOKEN }}
+    - name: Setup
+      run: chown -R $USER:$USER ${{ github.workspace }}
 
     - name: Raise App version
       run: |
