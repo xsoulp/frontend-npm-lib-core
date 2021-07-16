@@ -13,9 +13,19 @@ on:
       - 'package-lock.json'
 
 jobs:
+  # required, as github uses a dynamic user on each run to checkout and execute. It causes permissions issues.
+  Find-Container-Info:
+    runs-on: ubuntu-latest
+    outputs:
+      containerUser: ${{ steps.get-user.outputs.containerUser }}
+    
+    steps:
+      - id: get-user
+        run: echo "::set-output name=containerUser::`id -u`:`id -g`"
+    
 
-  
   Deploy-NPM-Component:
+    needs: Find-Container-Info
     if: github.event.pull_request.merged == false
     runs-on: ubuntu-20.04
     container:
@@ -23,19 +33,15 @@ jobs:
       credentials:
         username: ${{secrets.PORTUS_APP_USER}} 
         password: ${{secrets.PORTUS_APP_TOKEN}}
+      options: --user ${{ needs.Find-Container-Info.outputs.containerUser }}
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
-
-
-
     - name: Checkout    
       uses: actions/checkout@v2
       with:
         token: ${{ secrets.NPM_TOKEN }}
-    - name: Setup
-      run: chown -R $USER:$USER ${{ github.workspace }}
 
     - name: Raise App version
       run: |
